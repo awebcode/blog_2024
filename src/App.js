@@ -16,6 +16,12 @@ import Tags from "./pages/admin/screens/tags/Tags";
 import Categories from "./pages/admin/screens/categories/Categories";
 import ManageUsers from "./pages/admin/screens/users/ManageUsers";
 import UpdateUserProfile from "./pages/admin/screens/users/EditUser";
+import Pricing from "./components/home/Pricing";
+import Footer from "./components/Footer";
+import Articles from "./components/home/Articles";
+import About_us from "./components/home/About_us";
+import Contact from "./components/home/Contact";
+import FAQPage from "./components/home/Faq";
 
 function App() {
   return (
@@ -36,8 +42,17 @@ function App() {
           <Route path="posts/categories" element={<Categories />} />
           <Route path="posts/manage/edit/:slug" element={<EditPost />} />
         </Route>
+
+        {/* home */}
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/articles" element={<Articles />} />
+        <Route path="/about" element={<About_us />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/faq" element={<FAQPage />} />
       </Routes>
+
       <Toaster />
+      <Footer />
     </div>
   );
 }
