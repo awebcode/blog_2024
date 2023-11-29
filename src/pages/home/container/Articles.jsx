@@ -7,9 +7,10 @@ import { toast } from "react-hot-toast";
 import ArticleCardSkeleton from "../../../components/ArticleCardSkeleton";
 import ErrorMessage from "../../../components/ErrorMessage";
 import Header from "../../../components/Header";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 
 const Articles = ({ title }) => {
+  const location=useLocation()
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const category = searchParams.get("category");
@@ -35,7 +36,7 @@ const Articles = ({ title }) => {
 
   return (
     <>
-      <Header />
+      {location.pathname.includes("blog") && <Header />}
       {title && (
         <h1 className="text-4xl text-center md:text-6xl py-6 font-bold text-gray-800">
           {title}
