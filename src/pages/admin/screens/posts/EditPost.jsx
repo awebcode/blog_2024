@@ -16,6 +16,7 @@ import {
   categoryToOption,
   filterCategories,
 } from "../../../../utils/multiSelectTagUtils";
+import { upload } from "../../../../utils/upload";
 
 const promiseOptions = async (inputValue) => {
   const categoriesData = await getAllCategories();
@@ -35,7 +36,7 @@ const EditPost = () => {
   const [tags, setTags] = useState(null);
   const [postSlug, setPostSlug] = useState(slug);
   const [caption, setCaption] = useState("");
-  const [newDate,setDate]=useState("")
+  const [newDate, setDate] = useState("");
 
   const { data, isLoading, isError } = useQuery({
     queryFn: () => getSinglePost({ slug }),
@@ -45,60 +46,57 @@ const EditPost = () => {
       setCategories(data.categories.map((item) => item._id));
       setTitle(data.title);
       setTags(data.tags);
+      setCaption(data.caption)
       setDate(data?.postcreatedAtDate);
     },
     refetchOnWindowFocus: false,
   });
 
-  const {
-    mutate: mutateUpdatePostDetail,
-    isLoading: isLoadingUpdatePostDetail,
-  } = useMutation({
-    mutationFn: ({ updatedData, slug, token }) => {
-      return updatePost({
-        updatedData,
-        slug,
-        token,
-      });
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries(["blog", slug]);
-      toast.success("Post is updated");
-      navigate(`/admin/posts/manage/edit/${data.slug}`, { replace: true });
-    },
-    onError: (error) => {
-      toast.error(error.message);
-      console.log(error);
-    },
-  });
+  const { mutate: mutateUpdatePostDetail, isLoading: isLoadingUpdatePostDetail } =
+    useMutation({
+      mutationFn: ({ updatedData, slug, token }) => {
+        return updatePost({
+          updatedData,
+          slug,
+          token,
+        });
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries(["blog", slug]);
+        toast.success("Post is updated");
+        navigate(`/admin/posts/manage/edit/${data.slug}`, { replace: true });
+      },
+      onError: (error) => {
+        toast.error(error.message);
+        console.log(error);
+      },
+    });
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     setPhoto(file);
+    // await upload(file);
   };
 
   const handleUpdatePost = async () => {
     let updatedData = new FormData();
 
-    if (!initialPhoto && photo) {
-      updatedData.append("postPicture", photo);
-    } else if (initialPhoto && !photo) {
-      const urlToObject = async (url) => {
-        let reponse = await fetch(url);
-        let blob = await reponse.blob();
-        const file = new File([blob], initialPhoto, { type: blob.type });
-        return file;
-      };
-      const picture = await urlToObject(
-        stables.UPLOAD_FOLDER_BASE_URL + data?.photo
-      );
-
-      updatedData.append("postPicture", picture);
+    if (photo) {
+      const media = await upload(photo);
+      updatedData.append("postPicture", media.url);
     }
 
     updatedData.append(
       "document",
-      JSON.stringify({ body, categories, title, tags, slug: postSlug, caption,postcreatedAtDate:newDate })
+      JSON.stringify({
+        body,
+        categories,
+        title,
+        tags,
+        slug: postSlug,
+        caption,
+        postcreatedAtDate: newDate,
+      })
     );
 
     mutateUpdatePostDetail({
@@ -135,7 +133,7 @@ const EditPost = () => {
                 />
               ) : initialPhoto ? (
                 <img
-                  src={stables.UPLOAD_FOLDER_BASE_URL + data?.photo}
+                  src={data?.photo}
                   alt={data?.title}
                   className="rounded-xl w-full"
                 />

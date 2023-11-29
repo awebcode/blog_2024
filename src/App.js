@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import "./App.css";
@@ -22,16 +22,21 @@ import Articles from "./components/home/Articles";
 import About_us from "./components/home/About_us";
 import Contact from "./components/home/Contact";
 import FAQPage from "./components/home/Faq";
-
+import UserPage from "./components/Single_User";
+import ArticlesMain from "./pages/home/container/Articles";
 function App() {
+  const navigate = useNavigate()
+   const location = useLocation();
   return (
     <div className="App font-opensans">
       <Routes>
         <Route index path="/" element={<HomePage />} />
         <Route path="/blog/:slug" element={<ArticleDetailPage />} />
+        <Route path="/blog?" element={<ArticlesMain title="Category -Articles" />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/user/single-user/:id" element={<UserPage />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Admin />} />
           <Route path="comments" element={<Comments />} />
@@ -50,9 +55,8 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQPage />} />
       </Routes>
-
+      {!location.pathname.includes("admin") && <Footer />}
       <Toaster />
-      <Footer />
     </div>
   );
 }

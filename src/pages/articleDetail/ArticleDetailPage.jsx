@@ -7,13 +7,14 @@ import MainLayout from "../../components/MainLayout";
 import SocialShareButtons from "../../components/SocialShareButtons";
 import { images, stables } from "../../constants";
 import SuggestedPosts from "./container/SuggestedPosts";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { getAllPosts, getSinglePost } from "../../services/index/posts";
 import ArticleDetailSkeleton from "./components/ArticleDetailSkeleton";
 import ErrorMessage from "../../components/ErrorMessage";
 import { useSelector } from "react-redux";
 import parseJsonToHtml from "../../utils/parseJsonToHtml";
 import Editor from "../../components/editor/Editor";
+import moment from "moment";
 
 const ArticleDetailPage = () => {
   const { slug } = useParams();
@@ -51,20 +52,17 @@ const ArticleDetailPage = () => {
             <BreadCrumbs data={breadCrumbsData} />
             <img
               className="rounded-xl w-full"
-              src={
-                data?.photo
-                  ? stables.UPLOAD_FOLDER_BASE_URL + data?.photo
-                  : images.samplePostImage
-              }
+              src={data?.photo ? data?.photo : images.samplePostImage}
               alt={data?.title}
             />
             <div className="mt-4 flex gap-2">
               {data?.categories.map((category) => (
                 <Link
-                  to={`/blog?category=${category.name}`}
-                  className="text-primary text-sm font-roboto inline-block md:text-base"
+                 
+                  to={`/blog?category=${category.title}`} // Update the link to navigate directly to the category route
+                  className="text-primary badge badge-success text-sm font-roboto inline-block md:text-base"
                 >
-                  {category.name}
+                  {category.title}
                 </Link>
               ))}
             </div>
@@ -72,9 +70,11 @@ const ArticleDetailPage = () => {
               {data?.title}
             </h1>
             <div className="w-full">
-              {!isLoading && !isError && (
-                <Editor content={data?.body} editable={false} />
-              )}
+              {!isLoading && !isError && <Editor content={data?.body} editable={false} />}
+            </div>
+            <div className="">
+              <span className="pr-2 text-blue-700">Created Date:</span>
+              {moment(data.postcreatedAtDate).format("LLLL")}
             </div>
             <CommentsContainer
               comments={data?.comments}

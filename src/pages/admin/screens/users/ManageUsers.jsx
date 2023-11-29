@@ -169,7 +169,7 @@ const ManageUsers = () => {
                                 <img
                                   src={
                                     post?.avatar
-                                      ? stables.UPLOAD_FOLDER_BASE_URL + post?.avatar
+                                      ?post?.avatar
                                       : images.userImage
                                   }
                                   alt={post.name}

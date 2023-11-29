@@ -16,7 +16,7 @@ const ArticleCard = ({ post, className }) => {
         <img
           src={
             post.photo
-              ? stables.UPLOAD_FOLDER_BASE_URL + post.photo
+              ? post.photo
               : images.samplePostImage
           }
           alt="title"
@@ -35,7 +35,7 @@ const ArticleCard = ({ post, className }) => {
             <img
               src={
                 post.user.avatar
-                  ? stables.UPLOAD_FOLDER_BASE_URL + post.user.avatar
+                  ? post.user.avatar
                   : images.userImage
               }
               alt="post profile"

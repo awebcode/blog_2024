@@ -117,7 +117,6 @@ const getUserById = async (req, res, next) => {
 
 //update user by admin
 
-
 const updateUserProfile = async (req, res, next) => {
   const { name, email, verified, admin } = req.body;
 
@@ -138,7 +137,6 @@ const updateUserProfile = async (req, res, next) => {
       if (admin !== undefined) {
         user.admin = admin;
       }
-     
 
       // Save the updated user
       await user.save();
@@ -150,7 +148,6 @@ const updateUserProfile = async (req, res, next) => {
         email: user.email,
         verified: user.verified,
         admin: user.admin,
-        
       });
     } else {
       let error = new Error("User not found");
@@ -164,20 +161,18 @@ const updateUserProfile = async (req, res, next) => {
 
 //delete user
 
-
 //single user
 
 const deleteUser = async (req, res, next) => {
   const userId = req.params.id; // Assuming the user ID is passed as a route parameter
 
   try {
-     let user = await User.findById(userId);
-      await user.deleteOne()
-   
-      return res.status(204).json({
-       message:"User Deleted success!"
-      });
-    
+    let user = await User.findById(userId);
+    await user.deleteOne();
+
+    return res.status(204).json({
+      message: "User Deleted success!",
+    });
   } catch (error) {
     return next(error);
   }
@@ -201,7 +196,7 @@ const getUsers = async (req, res, next) => {
     const skip = (page - 1) * pageSize;
     const total = await User.find(where).countDocuments();
     const pages = Math.ceil(total / pageSize);
-    
+
     res.header({
       "x-filter": filter,
       "x-totalcount": JSON.stringify(total),
@@ -217,7 +212,7 @@ const getUsers = async (req, res, next) => {
     const result = await query
       .skip(skip)
       .limit(pageSize)
-     
+
       .sort({ createdAt: "-1" });
 
     return res.json(result);
@@ -260,51 +255,29 @@ const updateProfile = async (req, res, next) => {
 
 const updateProfilePicture = async (req, res, next) => {
   try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
 
-          console.log(req.body)
-         const user=await User.findById(req.user._id)
-    
-        if (req.files.profilePicture) {
-         const url = await cloudinary.uploader.upload(req.files.profilePicture.data, {
-           folder: "avatars",
-           width: 150,
-           crop: "scale",
-         });
-          console.log(url)
-          user.avatar = url?.url;
-          await user.save();
-          res.json({
-            _id: updatedUser._id,
-            avatar: updatedUser.avatar,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            verified: updatedUser.verified,
-            admin: updatedUser.admin,
-            token: await updatedUser.generateJWT(),
-          });
-        } else {
-          let filename;
-          let updatedUser = await User.findById(req.user._id);
-          filename = updatedUser.avatar;
-          updatedUser.avatar = "";
-          await updatedUser.save();
-          fileRemover(filename);
-          res.json({
-            _id: updatedUser._id,
-            avatar: updatedUser.avatar,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            verified: updatedUser.verified,
-            admin: updatedUser.admin,
-            token: await updatedUser.generateJWT(),
-          });
-        }
-      
-    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (req.body?.url) {
+      // Update profile picture with provided URL
+      user.avatar = req.body.url;
+    }
+
+    await user.save();
+
+    const { _id, name, email, verified, admin } = user;
+    const token = await user.generateJWT();
+
+    res.json({ _id, avatar: user.avatar, name, email, verified, admin, token });
   } catch (error) {
     next(error);
   }
 };
+
 //dashboard datas
 
 const dashboardDatas = async (req, res, next) => {
@@ -334,5 +307,5 @@ export {
   dashboardDatas,
   updateUserProfile,
   getUserById,
-  deleteUser
+  deleteUser,
 };

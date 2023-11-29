@@ -3,6 +3,7 @@ import { FiMessageSquare, FiEdit2, FiTrash } from "react-icons/fi";
 
 import { images, stables } from "../../constants";
 import CommentForm from "./CommentForm";
+import { useNavigate } from "react-router-dom";
 
 const Comment = ({
   comment,
@@ -27,23 +28,30 @@ const Comment = ({
     affectedComment._id === comment._id;
   const repliedCommentId = parentId ? parentId : comment._id;
   const replyOnUserId = comment.user._id;
-
+  const navigate = useNavigate();
   return (
     <div className="flex flex-nowrap items-start gap-x-3 bg-[#F2F4F5] p-3 rounded-lg">
       <img
-        src={
-          comment?.user?.avatar
-            ? stables.UPLOAD_FOLDER_BASE_URL + comment.user.avatar
-            : images.userImage
-        }
+        src={comment?.user?.avatar ? comment.user.avatar : images.userImage}
+        onClick={() => navigate(`/user/single-user/${comment?.user?._id}`)}
         alt="user profile"
-        className="w-9 h-9 object-cover rounded-full"
+        className="w-9 h-9 cursor-pointer object-cover rounded-full"
       />
       <div className="flex-1 flex flex-col">
-        <h5 className="font-bold text-dark-hard text-xs lg:text-sm">
+        <h5
+          onClick={() =>
+            commentBelongsToUser
+              ? navigate
+              ("/profile"): navigate(`/user/single-user/${comment?.user?._id}`)
+          }
+          className="font-bold cursor-pointer text-dark-hard text-xs lg:text-sm"
+        >
           {comment.user.name}
         </h5>
-        <span className="text-xs text-dark-light">
+        <span
+          onClick={() => navigate(`/user/single-user/${comment?.user?._id}`)}
+          className="text-xs cursor-pointer text-dark-light"
+        >
           {new Date(comment.createdAt).toLocaleDateString("en-US", {
             day: "numeric",
             month: "short",
@@ -52,9 +60,7 @@ const Comment = ({
           })}
         </span>
         {!isEditing && (
-          <p className="font-opensans mt-[10px] text-dark-light">
-            {comment.desc}
-          </p>
+          <p className="font-opensans mt-[10px] text-dark-light">{comment.desc}</p>
         )}
         {isEditing && (
           <CommentForm
@@ -68,9 +74,7 @@ const Comment = ({
           {isUserLoggined && (
             <button
               className="flex items-center space-x-2"
-              onClick={() =>
-                setAffectedComment({ type: "replying", _id: comment._id })
-              }
+              onClick={() => setAffectedComment({ type: "replying", _id: comment._id })}
             >
               <FiMessageSquare className="w-4 h-auto" />
               <span>Reply</span>
@@ -80,9 +84,7 @@ const Comment = ({
             <>
               <button
                 className="flex items-center space-x-2"
-                onClick={() =>
-                  setAffectedComment({ type: "editing", _id: comment._id })
-                }
+                onClick={() => setAffectedComment({ type: "editing", _id: comment._id })}
               >
                 <FiEdit2 className="w-4 h-auto" />
                 <span>Edit</span>

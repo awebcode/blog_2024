@@ -88,7 +88,6 @@ export const updateProfilePicture = async (token, urls ) => {
         Authorization: `Bearer ${token}`,
       },
     };
-    console.log(urls)
     const url = await upload(urls)
     console.log("url",url)
     const { data } = await axios.put(

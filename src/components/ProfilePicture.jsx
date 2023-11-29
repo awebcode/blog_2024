@@ -17,30 +17,16 @@ const ProfilePicture = ({ avatar }) => {
   const [openCrop, setOpenCrop] = useState(false);
   const [photo, setPhoto] = useState(null);
 
-  const { mutate, isLoading } = useMutation({
-    mutationFn: () => {
-      return updateProfilePicture(
-        userState?.token,
-        photo,
-      );
-    },
-    onSuccess: (data) => {
-     
-      setOpenCrop(false);
-      localStorage.setItem("account", JSON.stringify(data));
-      queryClient.invalidateQueries(["profile"]);
-      toast.success("Profile Photo is removed");
-    },
-    onError: (error) => {
-      toast.error(error.message);
-      console.log(error);
-    },
-  });
+  
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async(e) => {
     const file = e.target.files[0];
-    setPhoto({ url: URL.createObjectURL(file), file });
+    setPhoto( URL.createObjectURL(file));
+    // setPhoto(file);
     setOpenCrop(true);
+
+    await updateProfilePicture(userState?.token, file);
+     
   };
 
   const handleDeleteImage = () => {
@@ -49,7 +35,7 @@ const ProfilePicture = ({ avatar }) => {
         const formData = new FormData();
         formData.append("profilePicture", undefined);
 
-        mutate({ token: userState.userInfo.token, formData: formData });
+        // mutate({ token: userState.userInfo.token, formData: formData });
       } catch (error) {
         toast.error(error.message);
         console.log(error);
@@ -59,11 +45,11 @@ const ProfilePicture = ({ avatar }) => {
 
   return (
     <>
-      {openCrop &&
+      {/* {openCrop &&
         createPortal(
           <CropEasy photo={photo} setOpenCrop={setOpenCrop} />,
           document.getElementById("portal")
-        )}
+        )} */}
 
       <div className="w-full flex items-center gap-x-4">
         <div className="relative w-20 h-20 rounded-full outline outline-offset-2 outline-1 lutline-primary overflow-hidden">
@@ -71,12 +57,10 @@ const ProfilePicture = ({ avatar }) => {
             htmlFor="profilePicture"
             className="cursor-pointer absolute inset-0 rounded-full bg-transparent"
           >
-            {avatar ? (
-              <img
-                src={stables.UPLOAD_FOLDER_BASE_URL + avatar}
-                alt="profile"
-                className="w-full h-full object-cover"
-              />
+            {photo ? (
+              <img src={photo} alt="profile" className="w-full h-full object-cover" />
+            ) : avatar ? (
+              <img src={avatar} alt="profile" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-blue-50/50 flex justify-center items-center">
                 <HiOutlineCamera className="w-7 h-auto text-primary" />

@@ -1,19 +1,33 @@
 import axios from "axios";
 import { base_url } from "../base_url";
 
-export const getAllPosts = async (searchKeyword = "", page = 1, limit = 10) => {
+export const getAllPosts = async ({
+  searchKeyword = "",
+  page = 1,
+  limit = 10,
+  
+  category = "",
+}) => {
   try {
-    const { data, headers } = await axios.get(
-      `${base_url}/api/posts?searchKeyword=${searchKeyword}&page=${page}&limit=${limit}`
-    );
+    console.log("category",category)
+    let url = `${base_url}/api/posts?page=${page}&limit=${limit}`;
+
+    if (category) {
+      url += `&category=${category}`;
+    } else if (searchKeyword) {
+      url += `&searchKeyword=${searchKeyword}`;
+    }
+
+    const { data, headers } = await axios.get(url);
     return { data, headers };
   } catch (error) {
-    if (error.response && error.response.data.message)
+    if (error.response && error.response.data.message) {
       throw new Error(error.response.data.message);
-    throw new Error(error.message);
+    } else {
+      throw new Error(error.message);
+    }
   }
 };
-
 export const getSinglePost = async ({ slug }) => {
   try {
     const { data } = await axios.get(`${base_url}/api/posts/${slug}`);

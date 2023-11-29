@@ -3,6 +3,7 @@ import Post from "../models/Post.js";
 import Comment from "../models/Comment.js";
 import { fileRemover } from "../utils/fileRemover.js";
 import { v4 as uuidv4 } from "uuid";
+import PostCategories from "../models/PostCategories.js";
 
 const createPost = async (req, res, next) => {
   try {
@@ -24,59 +25,40 @@ const createPost = async (req, res, next) => {
     next(error);
   }
 };
-
+//update post
 const updatePost = async (req, res, next) => {
   try {
     const post = await Post.findOne({ slug: req.params.slug });
 
     if (!post) {
-      const error = new Error("Post aws not found");
-      next(error);
-      return;
+      return res.status(404).json({ error: "Post was not found" });
     }
 
-    const upload = uploadPicture.single("postPicture");
 
-    const handleUpdatePostData = async (data) => {
-      const { title, caption, slug, body, tags, categories, postcreatedAtDate } =
-        JSON.parse(data);
+    const { postPicture } = req.body;
+    const data = JSON.parse(req.body.document);
+   
+    const { title, caption, slug, body, tags, categories, postcreatedAtDate } =
+      data;
+    console.log(data)
+
+    if (postPicture) {
+      post.photo = postPicture;
+    }
+
+    if (title || caption || slug || body || tags || categories || postcreatedAtDate) {
       post.title = title || post.title;
       post.caption = caption || post.caption;
       post.slug = slug || post.slug;
       post.body = body || post.body;
       post.tags = tags || post.tags;
       post.categories = categories || post.categories;
+      post.postcreatedAtDate = postcreatedAtDate || post.postcreatedAtDate;
+    }
 
-      post.postcreatedAtDate =postcreatedAtDate|| post.postcreatedAtDate;
-      const updatedPost = await post.save();
-      return res.json(updatedPost);
-    };
-
-    upload(req, res, async function (err) {
-      if (err) {
-        const error = new Error(
-          "An unknown error occured when uploading " + err.message
-        );
-        next(error);
-      } else {
-        // every thing went well
-        if (req.file) {
-          let filename;
-          filename = post.photo;
-          if (filename) {
-            fileRemover(filename);
-          }
-          post.photo = req.file.filename;
-          handleUpdatePostData(req.body.document);
-        } else {
-          let filename;
-          filename = post.photo;
-          post.photo = "";
-          fileRemover(filename);
-          handleUpdatePostData(req.body.document);
-        }
-      }
-    });
+    const updatedPost = await post.save();
+    console.log(updatedPost)
+    return res.json(updatedPost);
   } catch (error) {
     next(error);
   }
@@ -103,6 +85,7 @@ const deletePost = async (req, res, next) => {
 
 const getPost = async (req, res, next) => {
   try {
+    
     const post = await Post.findOne({ slug: req.params.slug }).populate([
       {
         path: "user",
@@ -158,10 +141,20 @@ const getPost = async (req, res, next) => {
 
 const getAllPosts = async (req, res, next) => {
   try {
-    const filter = req.query.searchKeyword;
-    let where = {};
-    if (filter) {
-      where.title = { $regex: filter, $options: "i" };
+    let category;
+     let where = {};
+        console.log(req.query);
+    if (req.query.category) {
+      category = await PostCategories.findOne({ title: req.query.category });
+
+      if (category) {
+        where.categories = category._id;
+      }
+    }
+    
+   
+    if (req.query?.searchKeyword) {
+      where.title = { $regex: req.query?.searchKeyword, $options: "i" };
     }
     let query = Post.find(where);
     const page = parseInt(req.query.page) || 1;
@@ -171,7 +164,7 @@ const getAllPosts = async (req, res, next) => {
     const pages = Math.ceil(total / pageSize);
 
     res.header({
-      "x-filter": filter,
+      "x-filter": req.query?.searchKeyword,
       "x-totalcount": JSON.stringify(total),
       "x-currentpage": JSON.stringify(page),
       "x-pagesize": JSON.stringify(pageSize),
@@ -195,6 +188,7 @@ const getAllPosts = async (req, res, next) => {
 
     return res.json(result);
   } catch (error) {
+    console.log("err",error)
     next(error);
   }
 };
