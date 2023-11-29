@@ -16,29 +16,26 @@ const Hero = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["posts", searchKeyword],
     queryFn: () => getAllPosts({ searchKeyword }),
-    enabled:!!searchKeyword,
+    enabled: !!searchKeyword,
     onError: (error) => {
       toast.error(error.message);
       console.log(error);
     },
   });
 
-   useEffect(() => {
-     const fetchPosts = async () => {
-       await queryClient.prefetchQuery(["posts", searchKeyword], () =>
-         getAllPosts({ searchKeyword })
-       );
-     };
+  useEffect(() => {
+    const fetchPosts = async () => {
+      await queryClient.prefetchQuery(["posts", searchKeyword], () =>
+        getAllPosts({ searchKeyword })
+      );
+    };
 
-     if (!searchKeyword) {
-       setSearchResults(null); // Clear search results if searchKeyword is empty
-     } else {
-       fetchPosts();
-     }
-   }, [searchKeyword, queryClient]);
-
-  
-
+    if (!searchKeyword) {
+      setSearchResults(null); // Clear search results if searchKeyword is empty
+    } else {
+      fetchPosts();
+    }
+  }, [searchKeyword, queryClient]);
 
   const handleSearch = async (value) => {
     if (value === "") {
@@ -47,15 +44,13 @@ const Hero = () => {
     } else {
       // Minimum characters required to trigger a search
 
-      if (value.trim().length>=2) {
+      if (value.trim().length >= 2) {
         setSearchKeyword(value);
         const result = await getAllPosts({ searchKeyword: value });
         setSearchResults(result.data);
       }
     }
   };
-
-
 
   return (
     <section className="container mx-auto flex flex-col px-5 py-5 lg:flex-row">
@@ -89,7 +84,7 @@ const Hero = () => {
           </button>
 
           {/* fetch */}
-          {searchResults && searchResults?.length>0? (
+          {searchResults && searchResults?.length > 0 ? (
             <div className="absolute top-[70px] left-0 w-full z-50 bg-white border border-gray-300 rounded-lg p-4 max-h-[400px] overflow-y-scroll">
               <h3 className="text-lg font-bold mb-2">Search Results</h3>
               {searchResults.map((post) => (
@@ -119,7 +114,7 @@ const Hero = () => {
             </div>
           ) : (
             searchKeyword && (
-              <h1 className="text-center text-2xl font-bold text-gray-900 p-4 bg-white rounded">
+              <h1 className="absolute top-[70px] left-0 w-full z-50 text-center text-2xl font-bold text-gray-900 p-4 bg-white rounded">
                 No posts found!
               </h1>
             )
